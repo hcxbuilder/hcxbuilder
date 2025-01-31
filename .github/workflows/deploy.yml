@@ -9,14 +9,13 @@ permissions:
   contents: read
   pages: write
   id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+  deployments: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_BASE_PATH: /hcx-builder
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,23 +28,23 @@ jobs:
           
       - name: Setup Pages
         uses: actions/configure-pages@v4
-        
+        with:
+          enablement: true
+          
       - name: Install dependencies
         run: npm ci
         
       - name: Build with Next.js
-        run: npm run build
-        
-      - name: Static HTML export with Next.js
-        run: npm run export
+        run: |
+          npm run build
+          touch out/.nojekyll
         
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: github-pages
-          path: ./out
+          path: out
           if-no-files-found: error
-          retention-days: 1
 
   deploy:
     environment:
@@ -57,3 +56,5 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages
