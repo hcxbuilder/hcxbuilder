@@ -37,7 +37,9 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}
           
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npx browserslist@latest --update-db
         
       - name: Build with Next.js
         run: |
