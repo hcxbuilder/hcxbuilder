@@ -1,203 +1,318 @@
 'use client';
 
-import React, { useState, useContext } from 'react';
-import Menu from '../page';
+import React, { useState, useContext, useEffect } from 'react';
 import { ProjectContext } from '@/app/project';
 import { InputText } from 'primereact/inputtext';
 import { Card } from 'primereact/card';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Button } from 'primereact/button';
+import { DEFAULT_VALUES, VALIDATION_PATTERNS } from '@/constants';
+import { Chips } from 'primereact/chips';
+import { Dialog } from 'primereact/dialog';
+import { Checkbox } from 'primereact/checkbox';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { InputNumber } from 'primereact/inputnumber';
 
-interface VCenterConfig {
-    name: string;
-    hcx_manager: string;
-    vcenter_ip: string;
-    hcx_ip: string;
-    hcx_network: string;
-    datastore: string;
-    resource_pool: string;
-    cluster: string;
-    sso_url: string;
-    version: string;
-    network_mask: string;
-    gateway: string;
-}
-
-interface ValidationErrors {
-    [key: string]: string;
-}
-
-function VCenterConfiguration() {
+export default function VCenterConfiguration() {
     const { hcxProject, setHcxProject } = useContext(ProjectContext);
-    const [activeIndex, setActiveIndex] = useState(0);
-    const [errors, setErrors] = useState<{ [key: number]: ValidationErrors }>({});
+    const [errors, setErrors] = useState<{ [key: number]: { [key: string]: string } }>({});
+    const [showInfoDialog, setShowInfoDialog] = useState(true);
+    const [dontShowAgain, setDontShowAgain] = useState(false);
+    const [showEditDialog, setShowEditDialog] = useState(false);
+    const [editingVCenter, setEditingVCenter] = useState<number | null>(null);
 
-    const validateField = (field: keyof VCenterConfig, value: string): string => {
-        const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-        
-        switch (field) {
-            case 'name':
-            case 'hcx_manager':
-            case 'cluster':
-            case 'datastore':
-            case 'resource_pool':
-                return value.trim() ? '' : 'This field is required';
-            case 'vcenter_ip':
-            case 'sso_url':
-                return /^https?:\/\/.+/.test(value) ? '' : 'Must be a valid URL starting with http:// or https://';
-            case 'hcx_ip':
-            case 'gateway':
-                return ipRegex.test(value) ? '' : 'Must be a valid IP address (e.g., 192.168.1.1)';
-            case 'network_mask':
-                return ipRegex.test(value) ? '' : 'Must be a valid network mask (e.g., 255.255.255.0)';
-            case 'version':
-                return /^\d+\.\d+(\.\d+)?$/.test(value) ? '' : 'Must be a valid version number (e.g., 8.0 or 8.0.0)';
-            default:
-                return '';
+    const validateField = (index: number, field: string, value: string) => {
+        const newErrors = { ...errors };
+        if (!newErrors[index]) {
+            newErrors[index] = {};
         }
+
+        switch (field) {
+            case 'vcenter_url':
+            case 'vcenter_sso_url':
+                if (!VALIDATION_PATTERNS.URL.test(value)) {
+                    newErrors[index][field] = 'Invalid URL format';
+                } else {
+                    delete newErrors[index][field];
+                }
+                break;
+            case 'vcenter_version':
+                if (!VALIDATION_PATTERNS.VERSION.test(value)) {
+                    newErrors[index][field] = 'Invalid version format (e.g., 8.0 or 8.0.0)';
+                } else {
+                    delete newErrors[index][field];
+                }
+                break;
+            default:
+                if (!value.trim()) {
+                    newErrors[index][field] = 'This field is required';
+                } else {
+                    delete newErrors[index][field];
+                }
+        }
+
+        setErrors(newErrors);
     };
 
-    const handleVCenterChange = (index: number, field: keyof VCenterConfig, value: string) => {
+    const handleVCenterChange = (index: number, field: string, value: any) => {
         const updatedVCenters = [...(hcxProject.vcenters || [])];
         if (!updatedVCenters[index]) {
-            updatedVCenters[index] = {} as VCenterConfig;
+            updatedVCenters[index] = { ...DEFAULT_VALUES.VCENTER };
         }
         updatedVCenters[index] = {
             ...updatedVCenters[index],
             [field]: value
         };
+        setHcxProject({ ...hcxProject, vcenters: updatedVCenters });
         
-        const error = validateField(field, value);
-        setErrors(prev => ({
-            ...prev,
-            [index]: {
-                ...prev[index],
-                [field]: error
-            }
-        }));
-
-        setHcxProject({
-            ...hcxProject,
-            vcenters: updatedVCenters
-        });
+        if (typeof value === 'string') {
+            validateField(index, field, value);
+        }
     };
 
-    const renderInput = (index: number, field: keyof VCenterConfig, label: string) => (
-        <div className="p-float-label mb-5">
-            <InputText
-                id={`${field}-${index}`}
-                value={hcxProject.vcenters?.[index]?.[field] || ''}
-                onChange={(e) => handleVCenterChange(index, field, e.target.value)}
-                className={errors[index]?.[field] ? 'p-invalid' : ''}
-                aria-describedby={`${field}-${index}-help`}
-            />
-            <label htmlFor={`${field}-${index}`}>{label}</label>
-            {errors[index]?.[field] && (
-                <small id={`${field}-${index}-help`} className="p-error block">
-                    {errors[index][field]}
-                </small>
-            )}
-        </div>
-    );
-
-    const renderVCenterForm = (index: number) => {
-        return (
-            <div className="grid p-fluid">
-                <div className="col-12 md:col-6">
-                    <h3 className="text-xl mb-4">HCX Manager VM Configuration</h3>
-                    
-                    <div className="mb-4">
-                        <h4 className="text-lg mb-3">General Settings</h4>
-                        {renderInput(index, 'hcx_manager', 'HCX Manager Name')}
-                    </div>
-
-                    <div className="mb-4">
-                        <h4 className="text-lg mb-3">Network Configuration</h4>
-                        {renderInput(index, 'hcx_ip', 'HCX IP')}
-                        {renderInput(index, 'network_mask', 'Network Mask')}
-                        {renderInput(index, 'gateway', 'Gateway')}
-                        {renderInput(index, 'hcx_network', 'HCX Network')}
-                    </div>
-
-                    <div className="mb-4">
-                        <h4 className="text-lg mb-3">Resource Configuration</h4>
-                        {renderInput(index, 'cluster', 'Cluster')}
-                        {renderInput(index, 'datastore', 'Datastore')}
-                        {renderInput(index, 'resource_pool', 'Resource Pool')}
-                    </div>
-                </div>
-
-                <div className="col-12 md:col-6">
-                    <h3 className="text-xl mb-4">vCenter Configuration</h3>
-                    {renderInput(index, 'name', 'Name')}
-                    {renderInput(index, 'vcenter_ip', 'vCenter URL')}
-                    {renderInput(index, 'sso_url', 'SSO URL')}
-                    {renderInput(index, 'version', 'Version')}
-                </div>
-            </div>
-        );
+    const checkBodyTemplate = (value: string) => {
+        return value ? <i className="pi pi-check text-green-500"/> : <i className="pi pi-times text-red-500"/>;
     };
 
     const addVCenter = () => {
-        const updatedVCenters = [...(hcxProject.vcenters || [])];
-        updatedVCenters.push({} as VCenterConfig);
-        setHcxProject({
-            ...hcxProject,
-            vcenters: updatedVCenters
-        });
+        const newVCenter = { ...DEFAULT_VALUES.VCENTER };
+        const updatedVCenters = [...(hcxProject.vcenters || []), newVCenter];
+        setHcxProject({ ...hcxProject, vcenters: updatedVCenters });
+        handleEdit(updatedVCenters.length - 1);
     };
 
-    const deleteVCenter = (index: number) => {
-        confirmDialog({
-            message: 'Are you sure you want to delete this vCenter?',
-            header: 'Delete vCenter',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                const updatedVCenters = [...(hcxProject.vcenters || [])];
-                updatedVCenters.splice(index, 1);
-                setHcxProject({
-                    ...hcxProject,
-                    vcenters: updatedVCenters
-                });
-                if (activeIndex >= updatedVCenters.length) {
-                    setActiveIndex(Math.max(0, updatedVCenters.length - 1));
-                }
-            }
-        });
+    const handleEdit = (index: number) => {
+        setEditingVCenter(index);
+        setShowEditDialog(true);
     };
 
-    return (
-        <Menu>
-            <div className="flex flex-column gap-3 py-5 px-3">
-                <ConfirmDialog />
-                <div className="flex justify-content-end mb-3">
+    useEffect(() => {
+        const isHidden = localStorage.getItem('vcenter-info-hidden') === 'true';
+        setShowInfoDialog(!isHidden);
+    }, []);
+
+ 
+
+    const handleInfoDialogHide = () => {
+        // if (dontShowAgain) {
+        //     localStorage.setItem('vcenter-info-hidden', 'true');
+        // }
+        setShowInfoDialog(false);
+    };
+
+ 
+    interface VCenter {
+        vcenter_name: string;
+        vcenter_url: string;
+        vcenter_sso_url: string;
+        vcenter_version: string;
+        vcenter_clusters: string[];
+    }
+    
+        const actionBodyTemplate = (rowData: VCenter, rowInfo: { rowIndex: number }) => {
+            return (
+                <div className="flex gap-2">
                     <Button 
-                        label="Add vCenter" 
-                        icon="pi pi-plus" 
-                        onClick={addVCenter}
+                        icon="pi pi-pencil" 
+                        rounded 
+                        text 
+                        severity="info"
+                        onClick={() => handleEdit(rowInfo.rowIndex)}
+                    />
+                    <Button 
+                        icon="pi pi-trash" 
+                        rounded 
+                        text 
+                        severity="danger"
+                        onClick={() => removeVCenter(rowInfo.rowIndex)}
                     />
                 </div>
-                
-                <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
-                    {(hcxProject.vcenters || []).map((vcenter, index) => (
-                        <TabPanel key={index} header={vcenter.name || `vCenter ${index + 1}`}>
-                            <Card>
-                                <div className="flex justify-content-end mb-3">
-                                    <Button 
-                                        icon="pi pi-trash" 
-                                        severity="danger" 
-                                        onClick={() => deleteVCenter(index)}
-                                    />
+            );
+        };
+    
+        const removeVCenter = (index: number) => {
+            confirmDialog({
+                message: 'Are you sure you want to remove this vCenter configuration?',
+                header: 'Confirm Removal',
+                icon: 'pi pi-exclamation-triangle',
+                accept: () => {
+                    const updatedVCenters = hcxProject.vcenters?.filter((_, i) => i !== index);
+                    setHcxProject({ ...hcxProject, vcenters: updatedVCenters });
+                }
+            });
+        };
+    
+        const handleDialogHide = () => {
+            if (editingVCenter !== null) {
+                const currentVCenter = hcxProject.vcenters?.[editingVCenter];
+                if (!currentVCenter?.vcenter_name) {
+                    const updatedVCenters = hcxProject.vcenters?.filter((_, i) => i !== editingVCenter);
+                    setHcxProject({ ...hcxProject, vcenters: updatedVCenters });
+                }
+            }
+            setShowEditDialog(false);
+            setEditingVCenter(null);
+        };
+    
+        // Add footer to both dialogs
+         
+        
+            const editDialogFooter = (
+                <div className="flex justify-content-end gap-2">
+                    <Button label="Cancel" icon="pi pi-times" onClick={handleDialogHide} />
+                    <Button label="Save" icon="pi pi-check" onClick={handleDialogHide} severity="success" />
+                </div>
+            );
+        
+            return (
+                <div>
+                 
+                    <ConfirmDialog />
+                    <div className="flex justify-content-between align-items-center mb-3">
+                        <div className="flex align-items-center gap-2">
+                            <h2 className="text-2xl font-bold m-0">vCenter Configuration</h2>
+                            <Button 
+                                icon="pi pi-question-circle"
+                                onClick={() => setShowInfoDialog(true)}
+                                text
+                                rounded
+                                tooltip="Show configuration help"
+                            />
+                        </div>
+                        <Button icon="pi pi-plus" label="Add vCenter" onClick={addVCenter} severity="success" rounded />
+                    </div>
+    
+                    <DataTable 
+                        value={hcxProject.vcenters} 
+                        tableStyle={{ minWidth: '50rem' }}
+                        paginator 
+                        rows={5}
+                        rowsPerPageOptions={[5]}
+                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                    >
+                        <Column field="vcenter_name" header="Name" />
+                        <Column 
+                            field="vcenter_url" 
+                            header="URL Status" 
+                            body={(rowData) => checkBodyTemplate(rowData.vcenter_url)}
+                        />
+                        <Column 
+                            field="vcenter_sso_url" 
+                            header="SSO Status"
+                            body={(rowData) => checkBodyTemplate(rowData.vcenter_sso_url)}
+                        />
+                        <Column field="vcenter_version" header="vSphere Version" />
+                        <Column 
+                            field="vcenter_clusters" 
+                            header="Configured Clusters"
+                            body={(rowData) => rowData.vcenter_clusters?.length || 0}
+                        />
+                        <Column body={actionBodyTemplate} header="Actions" exportable={false} style={{ minWidth: '12rem' }}/>
+                    </DataTable>
+                    
+                    <Dialog 
+                        header="Edit vCenter Configuration" 
+                        visible={showEditDialog} 
+                        style={{ width: '50vw' }}
+                        onHide={handleDialogHide}
+                        modal
+                        closable
+                        dismissableMask
+                        footer={editDialogFooter}
+                    >
+                        {editingVCenter !== null && hcxProject.vcenters?.[editingVCenter] && (
+                            <div className="grid">
+                                <div className="col-12 md:col-6">
+                                    <div className="field">
+                                        <div className="flex flex-column gap-2">
+                                            <label htmlFor="vcenter_name" className="font-bold">vCenter Name</label>
+                                            <InputText
+                                                id="vcenter_name"
+                                                value={hcxProject.vcenters[editingVCenter]?.vcenter_name || ''}
+                                                onChange={(e) => handleVCenterChange(editingVCenter, 'vcenter_name', e.target.value)}
+                                                className={errors[editingVCenter]?.vcenter_name ? 'p-invalid w-full' : 'w-full'}
+                                            />
+                                            {errors[editingVCenter]?.vcenter_name && (
+                                                <small className="p-error">{errors[editingVCenter].vcenter_name}</small>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                                {renderVCenterForm(index)}
-                            </Card>
-                        </TabPanel>
-                    ))}
-                </TabView>
-            </div>
-        </Menu>
-    );
-}
-
-export default VCenterConfiguration;
+        
+                                <div className="col-12 md:col-6">
+                                    <div className="field">
+                                        <div className="flex flex-column gap-2">
+                                            <label htmlFor="vcenter_url" className="font-bold">vCenter URL</label>
+                                            <InputText
+                                                id="vcenter_url"
+                                                value={hcxProject.vcenters[editingVCenter]?.vcenter_url || ''}
+                                                onChange={(e) => handleVCenterChange(editingVCenter, 'vcenter_url', e.target.value)}
+                                                className={errors[editingVCenter]?.vcenter_url ? 'p-invalid w-full' : 'w-full'}
+                                                placeholder="https://vcenter.example.com"
+                                            />
+                                            {errors[editingVCenter]?.vcenter_url && (
+                                                <small className="p-error">{errors[editingVCenter].vcenter_url}</small>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+        
+                                <div className="col-12 md:col-6">
+                                    <div className="field">
+                                        <div className="flex flex-column gap-2">
+                                            <label htmlFor="vcenter_sso_url" className="font-bold">SSO URL</label>
+                                            <InputText
+                                                id="vcenter_sso_url"
+                                                value={hcxProject.vcenters[editingVCenter]?.vcenter_sso_url || ''}
+                                                onChange={(e) => handleVCenterChange(editingVCenter, 'vcenter_sso_url', e.target.value)}
+                                                className={errors[editingVCenter]?.vcenter_sso_url ? 'p-invalid w-full' : 'w-full'}
+                                                placeholder="https://sso.example.com"
+                                            />
+                                            {errors[editingVCenter]?.vcenter_sso_url && (
+                                                <small className="p-error">{errors[editingVCenter].vcenter_sso_url}</small>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+        
+                                <div className="col-12 md:col-6">
+                                    <div className="field">
+                                        <div className="flex flex-column gap-2">
+                                            <label htmlFor="vcenter_version" className="font-bold">Version</label>
+                                            <InputText
+                                                id="vcenter_version"
+                                                value={hcxProject.vcenters[editingVCenter]?.vcenter_version || ''}
+                                                onChange={(e) => handleVCenterChange(editingVCenter, 'vcenter_version', e.target.value)}
+                                                className={errors[editingVCenter]?.vcenter_version ? 'p-invalid w-full' : 'w-full'}
+                                                placeholder="8.0.0"
+                                            />
+                                            {errors[editingVCenter]?.vcenter_version && (
+                                                <small className="p-error">{errors[editingVCenter].vcenter_version}</small>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+        
+                                <div className="col-12">
+                                    <div className="field">
+                                        <div className="flex flex-column gap-2 p-fluid">
+                                            <label htmlFor="vcenter_clusters" className="font-bold">Clusters</label>
+                                            <Chips
+                                                id="vcenter_clusters"
+                                                value={hcxProject.vcenters[editingVCenter]?.vcenter_clusters || []}
+                                                onChange={(e) => handleVCenterChange(editingVCenter, 'vcenter_clusters', e.value)}
+                                                className="w-full"
+                                                placeholder="Type and press Enter to add clusters"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </Dialog>
+                </div>
+            );
+} // Only one closing brace for the component

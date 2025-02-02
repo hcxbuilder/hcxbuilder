@@ -1,0 +1,51 @@
+# HCX Builder Development Rules
+
+## Data Flow Rules
+0. Project is the root and can have multiple VCenters
+1. VCenter is the parent entity for Clusters
+2. Each VCenter can have multiple Clusters
+3. Each Cluster can have multiple Network Extensions
+4. Network Extensions require NE to be enabled on the Cluster
+5. Each VCenter must have unique name
+6. Each Cluster within a VCenter must have unique name
+6. Each Network Extensions within a Cluster must have unique vlan id
+
+## Validation Requirements
+1. IP Address fields must follow standard IPv4 format
+2. URLs must start with http:// or https://
+3. Version numbers must be in format: X.Y or X.Y.Z
+4. Required fields cannot be empty strings
+5. DNS and NTP servers must be valid IP addresses
+6. CIDR notation must be valid (e.g., 192.168.1.0/24)
+
+## Network Configuration Rules
+1. Management Network is always required
+2. vMotion, Replication, and Uplink networks can use Management network settings
+3. If not using Management network settings, all network fields become required
+4. Network Extension requires at least one IP
+5. HA Network Extension requires additional HA IPs
+6. Gateway IP must be in the same subnet as the network
+7. Network mask must be valid (e.g., 255.255.255.0)
+
+## State Management
+1. All form data must be saved in the Project Context
+2. Form validation should happen on field change
+3. Error messages must be displayed under the respective fields
+4. Default values should be used for new entries
+5. State updates must be atomic
+6. Preserve state during page navigation
+
+## UI/UX Guidelines
+1. Use TabView for multiple vCenters
+2. Use Card components for form sections
+3. Group related fields together
+4. Show confirmation dialog before deletions
+5. Display validation errors immediately after field changes
+6. Provide clear success/error feedback
+7. Implement progressive disclosure for complex forms
+
+## Error Handling
+1. Display user-friendly error messages
+2. Log technical errors for debugging
+3. Provide recovery options when possible
+4. Handle network timeouts gracefully

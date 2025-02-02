@@ -15,8 +15,8 @@ const AppMenu = () => {
             
             label: 'HCX Builder',
             items: [
+                { label: 'Home', icon: 'pi pi-fw pi-home', to: '/' },
                 { label: 'Wizard', icon: 'pi pi-fw pi-id-card', to: '/hcx/builder' },
-            
                 { label: 'Schema', icon: 'pi pi-fw pi-mobile', to: '/hcx/tree' },
                 { label: 'Import', icon: 'pi pi-fw pi-table', to: '/hcx/import' },
                 { label: 'Export', icon: 'pi pi-fw pi-list', to: '/hcx/export' },

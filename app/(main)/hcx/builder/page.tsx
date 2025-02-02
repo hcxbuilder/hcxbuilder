@@ -27,46 +27,47 @@ const HCXBuilderWizard: React.FC<{ children?: React.ReactNode }> = ({ children }
             case '2-vcenter':
                 setActiveIndex(1);
                 break;
-            case '3-cluster':
+            case '3-hcx-manager':
                 setActiveIndex(2);
                 break;
-            case '4-network':
+            case '4-service-mesh':    // Updated from '4-service-mesh'
                 setActiveIndex(3);
                 break;
             default:
+                setActiveIndex(0);
                 break;
         }
     }, [pathname]);
 
-    useEffect(() => {
-        checkActiveIndex();
-    }, [checkActiveIndex]);
-
     const wizardItems: WizardItem[] = [
         { label: 'Project', command: () => router.push('/hcx/builder') },
         { label: 'vCenters', command: () => router.push('/hcx/builder/2-vcenter') },
-        { label: 'Clusters', command: () => router.push('/hcx/builder/3-cluster') },
-        { label: 'Network Extension', command: () => router.push('/hcx/builder/4-network')}
+        { label: 'HCX Manager', command: () => router.push('/hcx/builder/3-hcx-manager') },
+        { label: 'HCX Services', command: () => router.push('/hcx/builder/4-service-mesh') }  // Updated URL
     ];
 
     const next = () => {
         const nextIndex = activeIndex + 1;
+        if (nextIndex > 3) return;
+        
         setActiveIndex(nextIndex);
         switch (nextIndex) {
             case 1:
                 router.push('/hcx/builder/2-vcenter');
                 break;
             case 2:
-                router.push('/hcx/builder/3-cluster');
+                router.push('/hcx/builder/3-hcx-manager');
                 break;
             case 3:
-                router.push('/hcx/builder/4-network');
+                router.push('/hcx/builder/4-service-mesh');  // Updated URL
                 break;
         }
     };
 
     const back = () => {
         const prevIndex = activeIndex - 1;
+        if (prevIndex < 0) return;
+        
         setActiveIndex(prevIndex);
         switch (prevIndex) {
             case 0:
@@ -76,7 +77,10 @@ const HCXBuilderWizard: React.FC<{ children?: React.ReactNode }> = ({ children }
                 router.push('/hcx/builder/2-vcenter');
                 break;
             case 2:
-                router.push('/hcx/builder/3-cluster');
+                router.push('/hcx/builder/3-hcx-manager');
+                break;
+            case 3:
+                router.push('/hcx/builder/4-service-mesh');  // Updated URL
                 break;
         }
     };
@@ -90,7 +94,10 @@ const HCXBuilderWizard: React.FC<{ children?: React.ReactNode }> = ({ children }
                 <Steps 
                     model={wizardItems} 
                     activeIndex={activeIndex} 
-                    onSelect={(e) => setActiveIndex(e.index)} 
+                    onSelect={(e) => {
+                        setActiveIndex(e.index);
+                        wizardItems[e.index].command();
+                    }} 
                     readOnly={false} 
                 />
             </div>
