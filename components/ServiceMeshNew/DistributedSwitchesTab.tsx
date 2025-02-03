@@ -33,17 +33,21 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
         
         // Add HA pairs first
         for (let i = 0; i < selectedSwitch.ne_ha_count; i++) {
-            totalAppliances.push(
-                { label: `NE ${i + 1} (HA enabled)`, value: `ne${i + 1}` }
-            );
+            totalAppliances.push({
+                label: `NE ${i + 1} (HA enabled)${usedAppliances.includes(`ne${i + 1}`) ? ' - In use' : ''}`,
+                value: `ne${i + 1}`
+            });
         }
         
         // Add standalone appliances
         for (let i = selectedSwitch.ne_ha_count; i < selectedSwitch.ne_count; i++) {
-            totalAppliances.push({ label: `NE ${i + 1}`, value: `ne${i + 1}` });
+            totalAppliances.push({
+                label: `NE ${i + 1}${usedAppliances.includes(`ne${i + 1}`) ? ' - In use' : ''}`,
+                value: `ne${i + 1}`
+            });
         }
         
-        return totalAppliances.filter(app => !usedAppliances.includes(app.value));
+        return totalAppliances;
     };
     
     const handleAdd = () => {
@@ -297,10 +301,13 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                                         </div>
                                         <div className="field">
                                             <label htmlFor="vlan_id">VLAN ID</label>
-                                            <InputText
+                                            <InputNumber
                                                 id="vlan_id"
                                                 value={selectedNetwork?.vlan_id || ''}
-                                                onChange={(e) => setSelectedNetwork(prev => ({...prev, vlan_id: e.value}))}
+                                                onValueChange={(e) => setSelectedNetwork(prev => ({...prev, vlan_id: e.value}))}
+                                                min={0}
+                                                max={4094}
+                                                useGrouping={false}
                                             />
                                         </div>
                                         <div className="field">
