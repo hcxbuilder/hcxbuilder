@@ -107,7 +107,7 @@ export default function ColoredDemo() {
                                     images: ['/images/ne.png']
                                 },
                                 children: showNetworks ? ds.extended_network?.filter(network => 
-                                    network && network.ne_id === (neIndex + 1).toString()
+                                    network && network.ne_id === `ne${neIndex + 1}`
                                 ).map(network => ({
                                     expanded: true,
                                     type: 'network',
@@ -116,7 +116,7 @@ export default function ColoredDemo() {
                                     data: {
                                         name: network.name,
                                         type: 'Network',
-                                        details: `Network: ${network.network}/${network.prefix} | VLAN: ${network.vlan_id || 'N/A'}`,
+                                        details: `${network.network}/${network.prefix} | VLAN: ${network.vlan_id || 'N/A'}`,
                                         images: ['/images/network.png']
                                     }
                                 })) || [] : []

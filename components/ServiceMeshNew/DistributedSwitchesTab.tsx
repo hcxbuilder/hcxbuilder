@@ -240,7 +240,9 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                                                 if (selectedNetwork && selectedSwitch) {
                                                     setSelectedSwitch(prev => {
                                                         if (!prev) return prev;
-                                                        const networks = prev.extended_network.flat();
+                                                        const networks = Array.isArray(prev.extended_network[0]) 
+                                                            ? prev.extended_network.flat() 
+                                                            : prev.extended_network;
                                                         const existingIndex = networks.findIndex(net => net.name === selectedNetwork.name);
                                                         
                                                         if (existingIndex >= 0) {
@@ -249,12 +251,12 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                                                             networks.push(selectedNetwork);
                                                         }
                                                         
-                                                        return {...prev, extended_network: [networks]};
+                                                        return {...prev, extended_network: networks};  // Store as single array
                                                     });
                                                     setShowNetworkModal(false);
                                                     setSelectedNetwork(null);
                                                 }
-                                            }} 
+                                            }}
                                             severity="success" 
                                         />
                                     </div>
@@ -321,9 +323,11 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                             </Dialog>
                         </div>
                         <DataTable
-                            value={selectedSwitch?.extended_network.flat() || []}
-                            tableStyle={{ minWidth: '50rem' }}
-                        >
+        value={Array.isArray(selectedSwitch?.extended_network[0]) 
+            ? selectedSwitch?.extended_network.flat() 
+            : selectedSwitch?.extended_network || []}
+        tableStyle={{ minWidth: '50rem' }}
+    >
                             <Column field="name" header="Name" />
                             <Column field="network" header="Network" />
                             <Column field="prefix" header="Prefix" />
@@ -350,8 +354,11 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                                             onClick={() => {
                                                 setSelectedSwitch(prev => {
                                                     if (!prev) return prev;
-                                                    const networks = prev.extended_network.flat().filter(net => net !== rowData);
-                                                    return {...prev, extended_network: networks.length > 0 ? [networks] : []};
+                                                    const networks = Array.isArray(prev.extended_network[0])
+                                                        ? prev.extended_network.flat()
+                                                        : prev.extended_network;
+                                                    const updatedNetworks = networks.filter(net => net !== rowData);
+                                                    return {...prev, extended_network: updatedNetworks};  // Store as single array
                                                 });
                                             }}
                                         />
