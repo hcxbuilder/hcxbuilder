@@ -84,44 +84,70 @@ export default function ColoredDemo() {
                                 ...(mesh.distributed_switches?.length ? ['/images/ne.png'] : [])
                             ]
                         },
-                        children: mesh.distributed_switches?.map((ds) => ({
-                            expanded: true,
-                            type: 'switch',
-                            className: 'bg-yellow-500 text-white',
-                            style: { borderRadius: '12px' },
-                            data: {
-                                name: ds.name,
-                                type: 'Distributed Switch',
-                                details: `NE Count: ${ds.ne_count} | HA Count: ${ds.ne_ha_count}`,
-                                images: ['/images/vds.png']
-                            },
-                            children: Array.from({ length: ds.ne_count }).map((_, neIndex) => ({
+                        children: [
+                            {
                                 expanded: true,
-                                type: 'ne',
-                                className: 'bg-blue-500 text-white',
+                                type: 'services',
+                                className: 'bg-orange-400 text-white',
                                 style: { borderRadius: '12px' },
                                 data: {
-                                    name: `NE ${neIndex + 1}`,
-                                    type: 'Network Extension',
-                                    details: ds.ne_ha_count > neIndex ? 'HA Enabled' : 'Standalone',
-                                    images: ['/images/ne.png']
+                                    name: 'Service Clusters',
+                                    type: 'Clusters',
+                                    details: mesh.clusters_services?.join(', ') || 'None',
+                                    images: ['/images/cluster.png']
+                                }
+                            },
+                            {
+                                expanded: true,
+                                type: 'deployments',
+                                className: 'bg-orange-400 text-white',
+                                style: { borderRadius: '12px' },
+                                data: {
+                                    name: 'Deployment Clusters',
+                                    type: 'Clusters',
+                                    details: mesh.clusters_deployments?.join(', ') || 'None',
+                                    images: ['/images/cluster.png']
+                                }
+                            },
+                            ...(mesh.distributed_switches?.map((ds) => ({
+                                expanded: true,
+                                type: 'switch',
+                                className: 'bg-yellow-500 text-white',
+                                style: { borderRadius: '12px' },
+                                data: {
+                                    name: ds.name,
+                                    type: 'Distributed Switch',
+                                    details: `NE Count: ${ds.ne_count} | HA Count: ${ds.ne_ha_count}`,
+                                    images: ['/images/vds.png']
                                 },
-                                children: showNetworks ? ds.extended_network?.filter(network => 
-                                    network && network.ne_id === `ne${neIndex + 1}`
-                                ).map(network => ({
+                                children: Array.from({ length: ds.ne_count }).map((_, neIndex) => ({
                                     expanded: true,
-                                    type: 'network',
-                                    className: 'bg-green-500 text-white',
+                                    type: 'ne',
+                                    className: 'bg-blue-500 text-white',
                                     style: { borderRadius: '12px' },
                                     data: {
-                                        name: network.name,
-                                        type: 'Network',
-                                        details: `${network.network}/${network.prefix} | VLAN: ${network.vlan_id || 'N/A'}`,
-                                        images: ['/images/network.png']
-                                    }
-                                })) || [] : []
-                            }))
-                        })) || []
+                                        name: `NE ${neIndex + 1}`,
+                                        type: 'Network Extension',
+                                        details: ds.ne_ha_count > neIndex ? 'HA Enabled' : 'Standalone',
+                                        images: ['/images/ne.png']
+                                    },
+                                    children: showNetworks ? ds.extended_network?.filter(network => 
+                                        network && network.ne_id === `ne${neIndex + 1}`
+                                    ).map(network => ({
+                                        expanded: true,
+                                        type: 'network',
+                                        className: 'bg-green-500 text-white',
+                                        style: { borderRadius: '12px' },
+                                        data: {
+                                            name: network.name,
+                                            type: 'Network',
+                                            details: `${network.network}/${network.prefix} | VLAN: ${network.vlan_id || 'N/A'}`,
+                                            images: ['/images/network.png']
+                                        }
+                                    })) || [] : []
+                                }))
+                            })) || [])
+                        ]
                     })) || []
                 }))
             }];
@@ -158,8 +184,7 @@ export default function ColoredDemo() {
             setIsExporting(false);
         }
     };
-console.log("data:",data)
-console.log("hcxProject:",hcxProject)
+
     return (
         <div className="flex flex-column gap-3">
             <div className="card">
