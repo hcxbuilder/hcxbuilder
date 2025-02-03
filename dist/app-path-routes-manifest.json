@@ -1,0 +1,11 @@
+{
+  "/favicon.ico/route": "/favicon.ico",
+  "/(main)/page": "/",
+  "/(main)/hcx/export/page": "/hcx/export",
+  "/(main)/hcx/import/page": "/hcx/import",
+  "/(main)/hcx/tree/page": "/hcx/tree",
+  "/(main)/hcx/builder/3-hcx-manager/page": "/hcx/builder/3-hcx-manager",
+  "/(main)/hcx/builder/4-service-mesh/page": "/hcx/builder/4-service-mesh",
+  "/(main)/hcx/builder/page": "/hcx/builder",
+  "/(main)/hcx/builder/2-vcenter/page": "/hcx/builder/2-vcenter"
+}
