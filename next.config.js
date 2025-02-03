@@ -3,7 +3,7 @@ const nextConfig = {
     typescript: {
         ignoreBuildErrors: true
     },
-    distDir: 'docs'
+    distDir: 'out'
 }
 
 module.exports = nextConfig
