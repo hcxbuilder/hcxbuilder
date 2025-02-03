@@ -240,20 +240,16 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                                                 if (selectedNetwork && selectedSwitch) {
                                                     setSelectedSwitch(prev => {
                                                         if (!prev) return prev;
-                                                        const networks = [...prev.extended_network];
-                                                        const existingGroupIndex = networks.findIndex(group => 
-                                                            group.some(net => net.name === selectedNetwork.name)
-                                                        );
+                                                        const networks = prev.extended_network.flat();
+                                                        const existingIndex = networks.findIndex(net => net.name === selectedNetwork.name);
                                                         
-                                                        if (existingGroupIndex >= 0) {
-                                                            networks[existingGroupIndex] = networks[existingGroupIndex].map(net => 
-                                                                net.name === selectedNetwork.name ? selectedNetwork : net
-                                                            );
+                                                        if (existingIndex >= 0) {
+                                                            networks[existingIndex] = selectedNetwork;
                                                         } else {
-                                                            networks.push([selectedNetwork]);
+                                                            networks.push(selectedNetwork);
                                                         }
                                                         
-                                                        return {...prev, extended_network: networks};
+                                                        return {...prev, extended_network: [networks]};
                                                     });
                                                     setShowNetworkModal(false);
                                                     setSelectedNetwork(null);
@@ -354,10 +350,8 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                                             onClick={() => {
                                                 setSelectedSwitch(prev => {
                                                     if (!prev) return prev;
-                                                    const networks = prev.extended_network.map(group => 
-                                                        group.filter(net => net !== rowData)
-                                                    ).filter(group => group.length > 0);
-                                                    return {...prev, extended_network: networks};
+                                                    const networks = prev.extended_network.flat().filter(net => net !== rowData);
+                                                    return {...prev, extended_network: networks.length > 0 ? [networks] : []};
                                                 });
                                             }}
                                         />
