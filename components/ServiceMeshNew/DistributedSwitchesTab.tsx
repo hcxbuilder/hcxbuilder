@@ -201,7 +201,18 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                                                     setSelectedSwitch(prev => {
                                                         if (!prev) return prev;
                                                         const networks = [...prev.extended_network];
-                                                        networks.push([selectedNetwork]);
+                                                        const existingGroupIndex = networks.findIndex(group => 
+                                                            group.some(net => net.name === selectedNetwork.name)
+                                                        );
+                                                        
+                                                        if (existingGroupIndex >= 0) {
+                                                            networks[existingGroupIndex] = networks[existingGroupIndex].map(net => 
+                                                                net.name === selectedNetwork.name ? selectedNetwork : net
+                                                            );
+                                                        } else {
+                                                            networks.push([selectedNetwork]);
+                                                        }
+                                                        
                                                         return {...prev, extended_network: networks};
                                                     });
                                                     setShowNetworkModal(false);
@@ -257,7 +268,7 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                                             />
                                         </div>
                                         <div className="field">
-                                            <label htmlFor="ne_id">NE ID</label>
+                                            <label htmlFor="ne_id">NE Appliance</label>
                                             <InputText
                                                 id="ne_id"
                                                 value={selectedNetwork?.ne_id || ''}
@@ -277,26 +288,37 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                             <Column field="prefix" header="Prefix" />
                             <Column field="gateway" header="Gateway" />
                             <Column field="vlan_id" header="VLAN ID" />
-                            <Column field="ne_id" header="NE ID" />
+                            <Column field="ne_id" header="NE Appliance" />
                             <Column 
                                 body={(rowData) => (
-                                    <Button
-                                        icon="pi pi-trash"
-                                        rounded
-                                        text
-                                        severity="danger"
-                                        onClick={() => {
-                                            setSelectedSwitch(prev => {
-                                                if (!prev) return prev;
-                                                const networks = prev.extended_network.map(group => 
-                                                    group.filter(net => net !== rowData)
-                                                ).filter(group => group.length > 0);
-                                                return {...prev, extended_network: networks};
-                                            });
-                                        }}
-                                    />
+                                    <div className="flex gap-2">
+                                        <Button
+                                            icon="pi pi-pencil"
+                                            rounded
+                                            text
+                                            onClick={() => {
+                                                setSelectedNetwork({...rowData});
+                                                setShowNetworkModal(true);
+                                            }}
+                                        />
+                                        <Button
+                                            icon="pi pi-trash"
+                                            rounded
+                                            text
+                                            severity="danger"
+                                            onClick={() => {
+                                                setSelectedSwitch(prev => {
+                                                    if (!prev) return prev;
+                                                    const networks = prev.extended_network.map(group => 
+                                                        group.filter(net => net !== rowData)
+                                                    ).filter(group => group.length > 0);
+                                                    return {...prev, extended_network: networks};
+                                                });
+                                            }}
+                                        />
+                                    </div>
                                 )}
-                                style={{ width: '5rem' }}
+                                style={{ width: '8rem' }}
                             />
                         </DataTable>
                     </div>
