@@ -6,6 +6,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { ServiceMeshConfig, DistributedSwitchConfig } from '@/types';
+import { Dropdown } from 'primereact/dropdown';
 
 interface DistributedSwitchesTabProps {
     mesh: ServiceMeshConfig;
@@ -22,6 +23,29 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
         setShowModal(true);
     };
 
+    const getAvailableAppliances = () => {
+        if (!selectedSwitch) return [];
+        const usedAppliances = selectedSwitch.extended_network.flat()
+            .map(net => net.ne_id)
+            .filter(id => id !== selectedNetwork?.ne_id);
+        
+        const totalAppliances = [];
+        
+        // Add HA pairs first
+        for (let i = 0; i < selectedSwitch.ne_ha_count; i++) {
+            totalAppliances.push(
+                { label: `NE ${i + 1} (HA enabled)`, value: `ne${i + 1}` }
+            );
+        }
+        
+        // Add standalone appliances
+        for (let i = selectedSwitch.ne_ha_count; i < selectedSwitch.ne_count; i++) {
+            totalAppliances.push({ label: `NE ${i + 1}`, value: `ne${i + 1}` });
+        }
+        
+        return totalAppliances.filter(app => !usedAppliances.includes(app.value));
+    };
+    
     const handleAdd = () => {
         const newSwitch: DistributedSwitchConfig = {
             name: '',
@@ -117,12 +141,22 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                 tableStyle={{ minWidth: '50rem' }}
             >
                 <Column field="name" header="Name" sortable />
-                <Column field="ne_count" header="NE Count" sortable />
-                <Column field="ne_ha_count" header="NE HA Count" sortable />
+  
                 <Column 
                     field="extended_network" 
                     header="Extended Networks"
                     body={(rowData) => rowData.extended_network.flat().length}
+                />
+                <Column 
+                    header="Appliances" 
+                    sortable 
+                    body={(rowData) => (
+                        <div>
+                            {rowData.ne_ha_count > 0 && `${rowData.ne_ha_count} HA pairs`}
+                            {rowData.ne_ha_count > 0 && rowData.ne_count - rowData.ne_ha_count > 0 && ', '}
+                            {rowData.ne_count - rowData.ne_ha_count > 0 && `${rowData.ne_count - rowData.ne_ha_count} standalone`}
+                        </div>
+                    )}
                 />
                 <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }} />
             </DataTable>
@@ -264,16 +298,18 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                                             <InputText
                                                 id="vlan_id"
                                                 value={selectedNetwork?.vlan_id || ''}
-                                                onChange={(e) => setSelectedNetwork(prev => ({...prev, vlan_id: e.target.value}))}
+                                                onChange={(e) => setSelectedNetwork(prev => ({...prev, vlan_id: e.value}))}
                                             />
                                         </div>
                                         <div className="field">
                                             <label htmlFor="ne_id">NE Appliance</label>
-                                            <InputText
-                                                id="ne_id"
-                                                value={selectedNetwork?.ne_id || ''}
-                                                onChange={(e) => setSelectedNetwork(prev => ({...prev, ne_id: e.target.value}))}
-                                            />
+                                            <Dropdown
+        id="ne_id"
+        value={selectedNetwork?.ne_id || ''}
+        options={getAvailableAppliances()}
+        onChange={(e) => setSelectedNetwork(prev => ({...prev, ne_id: e.value}))}
+        placeholder="Select an appliance"
+    />
                                         </div>
                                     </div>
                                 </div>
