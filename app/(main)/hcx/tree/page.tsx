@@ -62,9 +62,9 @@ export default function ColoredDemo() {
                 style: { borderRadius: '12px' },
                 data: {
                     name: hcxProject.name || 'Project',
-                    type: 'Project',
+                    type: '',
                     details: `vCenters: ${hcxProject.vcenters?.length || 0}`,
-                    images: ['/images/vcf.png']
+                    images: ['/images/ho.png']
                 },
                 children: hcxProject.vcenters?.map((vcenter) => ({
                     expanded: true,
@@ -100,7 +100,7 @@ export default function ColoredDemo() {
                                 style: { borderRadius: '12px' },
                                 data: {
                                     name: 'Service Clusters',
-                                    type: 'Clusters',
+                                    type: '',
                                     details: mesh.clusters_services?.join(', ') || 'None',
                                     images: ['/images/cluster.png']
                                 }
@@ -112,7 +112,7 @@ export default function ColoredDemo() {
                                 style: { borderRadius: '12px' },
                                 data: {
                                     name: 'Deployment Clusters',
-                                    type: 'Clusters',
+                                    type: '',
                                     details: mesh.clusters_deployments?.join(', ') || 'None',
                                     images: ['/images/cluster.png']
                                 }
