@@ -160,9 +160,16 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                             <InputNumber
                                 id="ne_ha_count"
                                 value={selectedSwitch?.ne_ha_count || 0}
-                                onValueChange={(e) => setSelectedSwitch(prev => prev ? {...prev, ne_ha_count: e.value || 0} : null)}
+                                onValueChange={(e) => setSelectedSwitch(prev => prev ? {
+                                    ...prev, 
+                                    ne_ha_count: Math.min(e.value || 0, prev.ne_count)
+                                } : null)}
                                 min={0}
+                                max={selectedSwitch?.ne_count || 0}
                             />
+                            <small className="text-gray-500 block mt-1">
+                                {`${selectedSwitch?.ne_ha_count || 0} HA pairs, ${(selectedSwitch?.ne_count || 0) - (selectedSwitch?.ne_ha_count || 0)} standalone appliances`}
+                            </small>
                         </div>
                     </div>
                     <div className="col-12 md:col-8">
