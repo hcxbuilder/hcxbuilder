@@ -45,13 +45,16 @@ jobs:
         run: |
           npm run build
           touch out/.nojekyll
-        
+          # Remove any symlinks from the build output
+          find out -type l -delete
+          
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: github-pages
           path: out
           if-no-files-found: error
+          compression-level: 9  # Add compression to reduce size
 
   deploy:
     environment:
