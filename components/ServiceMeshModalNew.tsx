@@ -131,18 +131,21 @@ const ServiceMeshModal = ({ visible, onHide, onSave, editingMesh }: ServiceMeshM
                             onMeshChange={handleMeshChange}
                         />
                     </TabPanel>
-                    <TabPanel header="Network Profile">
+                   
+                        <TabPanel header="Distributed Switches" disabled={!currentMesh.ne_enabled}>
+                            <DistributedSwitchesTab 
+                                mesh={currentMesh} 
+                                onMeshChange={handleMeshChange}
+                            />
+                        </TabPanel>
+                   
+                    <TabPanel header="Network Profile" >
                         <NetworkProfileTab 
                             mesh={currentMesh} 
                             onMeshChange={handleMeshChange}
                         />
                     </TabPanel>
-                    <TabPanel header="Distributed Switches">
-                        <DistributedSwitchesTab 
-                            mesh={currentMesh} 
-                            onMeshChange={handleMeshChange}
-                        />
-                    </TabPanel>
+                   
                 </TabView>
             )}
         </Dialog>
