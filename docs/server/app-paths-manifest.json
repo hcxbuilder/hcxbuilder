@@ -1,0 +1,11 @@
+{
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/(main)/page": "app/(main)/page.js",
+  "/(main)/hcx/export/page": "app/(main)/hcx/export/page.js",
+  "/(main)/hcx/import/page": "app/(main)/hcx/import/page.js",
+  "/(main)/hcx/tree/page": "app/(main)/hcx/tree/page.js",
+  "/(main)/hcx/builder/3-hcx-manager/page": "app/(main)/hcx/builder/3-hcx-manager/page.js",
+  "/(main)/hcx/builder/page": "app/(main)/hcx/builder/page.js",
+  "/(main)/hcx/builder/4-service-mesh/page": "app/(main)/hcx/builder/4-service-mesh/page.js",
+  "/(main)/hcx/builder/2-vcenter/page": "app/(main)/hcx/builder/2-vcenter/page.js"
+}
