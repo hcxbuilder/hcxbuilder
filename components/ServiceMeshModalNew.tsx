@@ -46,28 +46,63 @@ const ServiceMeshModal = ({ visible, onHide, onSave, editingMesh }: ServiceMeshM
     useEffect(() => {
         if (editingMesh) {
             setCurrentMesh(editingMesh);
+        } else {
+            // Reset for new service mesh
+            setCurrentMesh({
+                id: '',
+                name: '',
+                vcenter_name: '',
+                clusters_services: [],
+                clusters_deployments: [],
+                storage: [],
+                pool: [],
+                management: {
+                    network: '',
+                    ip: [],
+                    prefix: '',
+                    gateway: '',
+                    dns_servers: []
+                },
+                vmotion_type: NetworkTypes.MANAGEMENT,
+                replication_type: NetworkTypes.MANAGEMENT,
+                uplink_type: NetworkTypes.MANAGEMENT,
+                vmotion: null,
+                replication: null,
+                uplink: null,
+                ha_enabled: false,
+                distributed_switches: [],
+                wo_enabled: false
+            });
         }
-    }, [editingMesh]);
+    }, [editingMesh, visible]);
 
     const handleMeshChange = (field: keyof ServiceMeshConfig, value: any) => {
-        if (currentMesh) {
-            setCurrentMesh(prev => ({
-                ...prev!,
-                [field]: value
-            }));
-        }
+        setCurrentMesh(prev => ({
+            ...prev,
+            [field]: value
+        }));
     };
 
     const handleSave = () => {
         if (currentMesh) {
+            if (!currentMesh.id) {
+                // New service mesh
+                currentMesh.id = `mesh_${Date.now()}`;
+            }
             onSave(currentMesh);
             onHide();
+            setActiveIndex(0);
         }
+    };
+
+    const handleCancel = () => {
+        onHide();
+        setActiveIndex(0); // Reset to first tab after cancel
     };
 
     const footer = (
         <div className="flex justify-content-end gap-2">
-            <Button label="Cancel" icon="pi pi-times" onClick={onHide} />
+            <Button label="Cancel" icon="pi pi-times" onClick={handleCancel} />
             <Button label="Save" icon="pi pi-check" onClick={handleSave} severity="success" />
         </div>
     );

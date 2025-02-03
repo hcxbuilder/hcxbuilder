@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
+import { Chips } from 'primereact/chips';  // Add this import
 import { ServiceMeshConfig } from '@/types';
 import { ProjectContext } from '@/app/project';
 
@@ -32,9 +33,6 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ mesh, onMeshChange }) => {
             );
             if (selectedVCenter) {
                 setAvailableClusters(selectedVCenter.vcenter_clusters || []);
-                // Reset clusters when vCenter changes
-                onMeshChange('clusters_services', []);
-                onMeshChange('clusters_deployments', []);
             }
         } else {
             setAvailableClusters([]);
@@ -48,6 +46,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ mesh, onMeshChange }) => {
 
     const handleVCenterChange = (value: string) => {
         onMeshChange('vcenter_name', value);
+        onMeshChange('clusters_services', []);
+        onMeshChange('clusters_deployments', []);
+        onMeshChange('storage', []);
+        onMeshChange('pool', []);
     };
 
     return (
@@ -77,6 +79,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ mesh, onMeshChange }) => {
                     />
                 </div>
             </div>
+       
             <div className="col-12 md:col-6">
                 <div className="field">
                     <label className="font-bold">Service Clusters</label>
@@ -103,6 +106,31 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ mesh, onMeshChange }) => {
                     />
                 </div>
             </div>
+            <div className="col-12 md:col-6">
+                <div className="field">
+                    <label className="font-bold">Storage</label>
+                    <Chips
+                        value={mesh.storage}
+                        onChange={(e) => onMeshChange('storage', e.value)}
+                        placeholder="Add storage"
+                        className="w-full"
+                        disabled={!mesh.vcenter_name}
+                    />
+                </div>
+            </div>
+            <div className="col-12 md:col-6">
+                <div className="field">
+                    <label className="font-bold">Resource Pool</label>
+                    <Chips
+                        value={mesh.pool}
+                        onChange={(e) => onMeshChange('pool', e.value)}
+                        placeholder="Add resource pool"
+                        className="w-full"
+                        disabled={!mesh.vcenter_name}
+                    />
+                </div>
+            </div>
+
         </div>
     );
 };
