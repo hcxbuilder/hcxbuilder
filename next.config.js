@@ -3,7 +3,8 @@ const nextConfig = {
     typescript: {
         ignoreBuildErrors: true
     },
-    distDir: 'out'
+    distDir: 'out',
+    basePath: "/hcxbuilder",
 }
 
 module.exports = nextConfig
