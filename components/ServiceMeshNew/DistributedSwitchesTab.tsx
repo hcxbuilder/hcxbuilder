@@ -15,7 +15,8 @@ interface DistributedSwitchesTabProps {
 const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, onMeshChange }) => {
     const [selectedSwitch, setSelectedSwitch] = useState<DistributedSwitchConfig | null>(null);
     const [showModal, setShowModal] = useState(false);
-
+    const [showNetworkModal, setShowNetworkModal] = useState(false);
+    const [selectedNetwork, setSelectedNetwork] = useState<any>(null);
     const handleEdit = (switchData: DistributedSwitchConfig) => {
         setSelectedSwitch({...switchData});
         setShowModal(true);
@@ -30,6 +31,17 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
         };
         setSelectedSwitch(newSwitch);
         setShowModal(true);
+    };
+    const handleAddNetwork = () => {
+        setSelectedNetwork({
+            name: '',
+            network: '',
+            prefix: '',
+            gateway: '',
+            vlan_id: '',
+            ne_id: ''
+        });
+        setShowNetworkModal(true);
     };
 
     const handleSave = () => {
@@ -161,22 +173,93 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                                 rounded
                                 text
                                 severity="success"
-                                onClick={() => {
-                                    setSelectedSwitch(prev => {
-                                        if (!prev) return prev;
-                                        const networks = [...prev.extended_network];
-                                        networks.push([{
-                                            name: '',
-                                            network: '',
-                                            prefix: '',
-                                            gateway: '',
-                                            vlan_id: '',
-                                            ne_id: ''
-                                        }]);
-                                        return {...prev, extended_network: networks};
-                                    });
-                                }}
+                                onClick={handleAddNetwork}
                             />
+                            
+              
+                            <Dialog
+                                visible={showNetworkModal}
+                                style={{ width: '450px' }}
+                                header="Add Network"
+                                modal
+                                className="p-fluid"
+                                footer={(
+                                    <div>
+                                        <Button label="Cancel" icon="pi pi-times" onClick={() => setShowNetworkModal(false)} className="p-button-text" />
+                                        <Button 
+                                            label="Save" 
+                                            icon="pi pi-check" 
+                                            onClick={() => {
+                                                if (selectedNetwork && selectedSwitch) {
+                                                    setSelectedSwitch(prev => {
+                                                        if (!prev) return prev;
+                                                        const networks = [...prev.extended_network];
+                                                        networks.push([selectedNetwork]);
+                                                        return {...prev, extended_network: networks};
+                                                    });
+                                                    setShowNetworkModal(false);
+                                                    setSelectedNetwork(null);
+                                                }
+                                            }} 
+                                            severity="success" 
+                                        />
+                                    </div>
+                                )}
+                                onHide={() => setShowNetworkModal(false)}
+                            >
+                                <div className="grid">
+                                    <div className="col-12">
+                                        <div className="field">
+                                            <label htmlFor="net_name">Name</label>
+                                            <InputText
+                                                id="net_name"
+                                                value={selectedNetwork?.name || ''}
+                                                onChange={(e) => setSelectedNetwork(prev => ({...prev, name: e.target.value}))}
+                                            />
+                                        </div>
+                                        <div className="field">
+                                            <label htmlFor="network">Network</label>
+                                            <InputText
+                                                id="network"
+                                                value={selectedNetwork?.network || ''}
+                                                onChange={(e) => setSelectedNetwork(prev => ({...prev, network: e.target.value}))}
+                                            />
+                                        </div>
+                                        <div className="field">
+                                            <label htmlFor="prefix">Prefix</label>
+                                            <InputText
+                                                id="prefix"
+                                                value={selectedNetwork?.prefix || ''}
+                                                onChange={(e) => setSelectedNetwork(prev => ({...prev, prefix: e.target.value}))}
+                                            />
+                                        </div>
+                                        <div className="field">
+                                            <label htmlFor="gateway">Gateway</label>
+                                            <InputText
+                                                id="gateway"
+                                                value={selectedNetwork?.gateway || ''}
+                                                onChange={(e) => setSelectedNetwork(prev => ({...prev, gateway: e.target.value}))}
+                                            />
+                                        </div>
+                                        <div className="field">
+                                            <label htmlFor="vlan_id">VLAN ID</label>
+                                            <InputText
+                                                id="vlan_id"
+                                                value={selectedNetwork?.vlan_id || ''}
+                                                onChange={(e) => setSelectedNetwork(prev => ({...prev, vlan_id: e.target.value}))}
+                                            />
+                                        </div>
+                                        <div className="field">
+                                            <label htmlFor="ne_id">NE ID</label>
+                                            <InputText
+                                                id="ne_id"
+                                                value={selectedNetwork?.ne_id || ''}
+                                                onChange={(e) => setSelectedNetwork(prev => ({...prev, ne_id: e.target.value}))}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </Dialog>
                         </div>
                         <DataTable
                             value={selectedSwitch?.extended_network.flat() || []}
