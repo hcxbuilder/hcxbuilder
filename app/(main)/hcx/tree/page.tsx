@@ -232,6 +232,7 @@ export default function ColoredDemo() {
                                 transition: isDragging ? 'none' : 'transform 0.2s',
                                 cursor: isDragging ? 'grabbing' : 'grab'
                             }}
+                            className="custom-org-chart" // Add this class
                             onMouseDown={(e) => {
                                 setIsDragging(true);
                                 setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
@@ -247,6 +248,14 @@ export default function ColoredDemo() {
                             onMouseUp={() => setIsDragging(false)}
                             onMouseLeave={() => setIsDragging(false)}
                         >
+                            <style jsx>{`
+                                .custom-org-chart :global(.p-organizationchart-line-down),
+                                .custom-org-chart :global(.p-organizationchart-line-left),
+                                .custom-org-chart :global(.p-organizationchart-line-right),
+                                .custom-org-chart :global(.p-organizationchart-line-top) {
+                                    border-width: 2px !important;
+                                }
+                            `}</style>
                             <OrganizationChart 
                                 value={data}
                                 nodeTemplate={nodeTemplate}
