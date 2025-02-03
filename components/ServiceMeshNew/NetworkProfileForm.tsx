@@ -3,14 +3,19 @@ import { InputText } from 'primereact/inputtext';
 import { Chips } from 'primereact/chips';
 import { NetworkProfile } from '@/types';
 import { InputNumber } from 'primereact/inputnumber';
+import { DistributedSwitchConfig } from '@/types';
 
 interface NetworkProfileFormProps {
     profile: NetworkProfile | null;
     onChange: (profile: NetworkProfile) => void;
     title: string;
+    distributedSwitches: DistributedSwitchConfig[];
 }
 
-const NetworkProfileForm: React.FC<NetworkProfileFormProps> = ({ profile, onChange, title }) => {
+const NetworkProfileForm: React.FC<NetworkProfileFormProps> = ({ profile, onChange, title, distributedSwitches }) => {
+    const totalNECount = distributedSwitches.reduce((sum, vds) => sum + vds.ne_count, 0);
+    const totalHACount = distributedSwitches.reduce((sum, vds) => sum + vds.ne_ha_count, 0);
+
     if (!profile) return null;
 
     return (
@@ -69,9 +74,9 @@ const NetworkProfileForm: React.FC<NetworkProfileFormProps> = ({ profile, onChan
                             <p>Required IP addresses:</p>
                             <ul className="list-none p-0 m-0">
                                 <li>• 1 IP for IX</li>
-                                <li>• {profile.ne_count || 1} IP{(profile.ne_count || 1) > 1 ? 's' : ''} for NE</li>
-                                <li>• Total: {(profile.ne_count || 1) + 1} required</li>
-                                <li className={profile.ip.length >= ((profile.ne_count || 1) + 1) ? 'text-green-500' : 'text-red-500'}>
+                                <li>• {totalNECount} IP{totalNECount > 1 ? 's' : ''} for NE ({totalHACount} HA pairs, {totalNECount - totalHACount} standalone)</li>
+                                <li>• Total: {totalNECount + 1} required</li>
+                                <li className={profile.ip.length >= (totalNECount + 1) ? 'text-green-500' : 'text-red-500'}>
                                     • {profile.ip.length} IP{profile.ip.length !== 1 ? 's' : ''} provided
                                 </li>
                             </ul>

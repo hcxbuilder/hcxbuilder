@@ -22,6 +22,7 @@ const NetworkProfileTab: React.FC<NetworkProfileTabProps> = ({ mesh, onMeshChang
                 title="Management Network"
                 profile={mesh.management}
                 onChange={(profile) => onMeshChange(NetworkProfiles.MANAGEMENT, profile)}
+                distributedSwitches={mesh.distributed_switches}
             />
             
             {mesh.vmotion_type === NetworkTypes.DEDICATED && (
@@ -48,44 +49,7 @@ const NetworkProfileTab: React.FC<NetworkProfileTabProps> = ({ mesh, onMeshChang
                 />
             )}
 
-            <div className="col-12">
-                <h3>Network Types</h3>
-                <div className="grid">
-                    <div className="col-12 md:col-4">
-                        <div className="field">
-                            <label className="font-bold">vMotion Type</label>
-                            <Dropdown
-                                value={mesh.vmotion_type}
-                                options={networkTypes}
-                                onChange={(e) => onMeshChange('vmotion_type', e.value)}
-                                className="w-full"
-                            />
-                        </div>
-                    </div>
-                    <div className="col-12 md:col-4">
-                        <div className="field">
-                            <label className="font-bold">Replication Type</label>
-                            <Dropdown
-                                value={mesh.replication_type}
-                                options={networkTypes}
-                                onChange={(e) => onMeshChange('replication_type', e.value)}
-                                className="w-full"
-                            />
-                        </div>
-                    </div>
-                    <div className="col-12 md:col-4">
-                        <div className="field">
-                            <label className="font-bold">Uplink Type</label>
-                            <Dropdown
-                                value={mesh.uplink_type}
-                                options={networkTypes.filter(t => t.value !== NetworkTypes.VMOTION)}
-                                onChange={(e) => onMeshChange('uplink_type', e.value)}
-                                className="w-full"
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
+         
         </div>
     );
 };
