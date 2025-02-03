@@ -131,9 +131,10 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                 label="Add Switch"
                     icon="pi pi-plus" 
                     severity="success"
-                    text
+                    
                     rounded
                     onClick={handleAdd}
+                    className=" col-12 md:col-6 lg:col-3"
                 />
             </div>
             <DataTable
@@ -210,9 +211,10 @@ const DistributedSwitchesTab: React.FC<DistributedSwitchesTabProps> = ({ mesh, o
                         <div className="flex justify-content-between align-items-center mb-4">
                             <h5 className="m-0">Extended Networks</h5>
                             <Button
+                                label='Add network'
                                 icon="pi pi-plus"
                                 rounded
-                                text
+                                className=" col-12 md:col-6 lg:col-3"
                                 severity="success"
                                 onClick={handleAddNetwork}
                             />
