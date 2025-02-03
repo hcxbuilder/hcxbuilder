@@ -37,7 +37,6 @@ export const DEFAULT_VALUES = {
         vMotion: null,
         replication: null,
         uplink: null,
-        ha_enabled: false,
         distributed_switches: [],
         wo_enabled: false
     }

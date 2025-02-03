@@ -35,7 +35,7 @@ const HomePage = () => {
             </div>
             
             {hcxProject.name ? (
-                <div className="col-12 md:col-6 lg:col-3">
+                <div className="col-12 md:col-6 lg:col-4">
                     <Card title="Current Project" className="h-full">
                         <div className="flex flex-column gap-3">
                             <p className="m-0 text-secondary font-bold">

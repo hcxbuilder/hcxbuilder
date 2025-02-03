@@ -24,7 +24,6 @@ export interface ServiceMeshConfig {
     [NetworkProfiles.VMOTION]: NetworkProfile | null;
     [NetworkProfiles.REPLICATION]: NetworkProfile | null;
     [NetworkProfiles.UPLINK]: NetworkProfile | null;
-    ha_enabled: boolean;
     distributed_switches: DistributedSwitchConfig[];
     wo_enabled: boolean;
 }

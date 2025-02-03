@@ -38,7 +38,6 @@ const ServiceMeshModal = ({ visible, onHide, onSave, editingMesh }: ServiceMeshM
         vmotion: null,
         replication: null,
         uplink: null,
-        ha_enabled: false,
         distributed_switches: [],
         wo_enabled: false
     });
@@ -69,7 +68,6 @@ const ServiceMeshModal = ({ visible, onHide, onSave, editingMesh }: ServiceMeshM
                 vmotion: null,
                 replication: null,
                 uplink: null,
-                ha_enabled: false,
                 distributed_switches: [],
                 wo_enabled: false
             });
