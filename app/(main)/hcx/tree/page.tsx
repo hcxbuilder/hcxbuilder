@@ -15,6 +15,14 @@ export default function ColoredDemo() {
     const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
     const [isExporting, setIsExporting] = useState(false);
 
+    // Add zoom state near other state declarations
+    const [zoomLevel, setZoomLevel] = useState(1);
+
+    // Add position state near other state declarations
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
     const nodeTemplate = (node: TreeNode) => {
         return (
             <div 
@@ -195,7 +203,17 @@ export default function ColoredDemo() {
                         onChange={e => setShowNetworks(e.checked)}
                     />
                     <label htmlFor="show-networks" className="ml-2">Show Networks</label>
-                    <div className="ml-auto">
+                    <div className="ml-auto flex gap-2">
+                        <Button 
+                            icon="pi pi-minus" 
+                            onClick={() => setZoomLevel(prev => Math.max(0.5, prev - 0.1))}
+                            className="p-button-rounded p-button-secondary"
+                        />
+                        <Button 
+                            icon="pi pi-plus" 
+                            onClick={() => setZoomLevel(prev => Math.min(2, prev + 0.1))}
+                            className="p-button-rounded p-button-secondary"
+                        />
                         <Button 
                             label="Export PNG" 
                             icon="pi pi-image" 
@@ -207,10 +225,33 @@ export default function ColoredDemo() {
 
                 <div className="overflow-x-auto">
                     {data.length > 0 && (
-                        <OrganizationChart 
-                            value={data}
-                            nodeTemplate={nodeTemplate}
-                        />
+                        <div 
+                            style={{ 
+                                transform: `translate(${position.x}px, ${position.y}px) scale(${zoomLevel})`,
+                                transformOrigin: 'top center',
+                                transition: isDragging ? 'none' : 'transform 0.2s',
+                                cursor: isDragging ? 'grabbing' : 'grab'
+                            }}
+                            onMouseDown={(e) => {
+                                setIsDragging(true);
+                                setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+                            }}
+                            onMouseMove={(e) => {
+                                if (isDragging) {
+                                    setPosition({
+                                        x: e.clientX - dragStart.x,
+                                        y: e.clientY - dragStart.y
+                                    });
+                                }
+                            }}
+                            onMouseUp={() => setIsDragging(false)}
+                            onMouseLeave={() => setIsDragging(false)}
+                        >
+                            <OrganizationChart 
+                                value={data}
+                                nodeTemplate={nodeTemplate}
+                            />
+                        </div>
                     )}
                 </div>
             </div>
